@@ -61,6 +61,6 @@ begin
         );
     end generate;
 
-    cout <= prev_cin(n-1);  -- Assign final carry-out to output.
+    cout <= curr_cin(n-1);  -- Assign final carry-out to output.
 
 end AdderSubArch;
