@@ -21,46 +21,46 @@ architecture AdderSubArch of AdderSub is
         );
     end component;
 
-    SIGNAL reg : std_logic_vector(n-1 DOWNTO 0);  -- Internal register for carry propagation.
-    SIGNAL X_ctrl, Y_ctrl : std_logic_vector(n-1 DOWNTO 0);  -- Control signals for modified X and Y.
+    SIGNAL curr_cin : std_logic_vector(n-1 DOWNTO 0);  -- Internal register for carry propagation.
+    SIGNAL x_vec, y_vec : std_logic_vector(n-1 DOWNTO 0);  -- Control signals for modified X and Y.
     SIGNAL cin : std_logic;  -- Carry-in for the first full adder.
 
 begin
 
     -- Determine how X should be processed based on ALU function.
-    X_ctrl <= (others => '0') when (ALUFN = "011") else  -- Increment Y by 1 (X unused).
-              (others => '1') when (ALUFN = "100") else  -- Decrement Y by 1 (X unused).
-              not X when (ALUFN = "001" or ALUFN = "010") else  -- Subtraction or negation (2's complement).
-              X when ALUFN = "000" else  -- Normal addition (X remains unchanged).
-              (others => '0');  -- Default case: set to zero.
+    x_vec <= (others => '0') when (ALUFN = "011") else  -- Increment Y by 1 (X unused).
+             (others => '1') when (ALUFN = "100") else  -- Decrement Y by 1 (X unused).
+             not X when (ALUFN = "001" or ALUFN = "010") else  -- Subtraction or negation (2's complement).
+             X when ALUFN = "000" else  -- Normal addition (X remains unchanged).
+             (others => '0');  -- Default case: set to zero.
     
     -- Determine how Y should be processed based on ALU function.
-    Y_ctrl <= Y when (ALUFN = "000" or ALUFN = "001" or ALUFN = "011" or ALUFN = "100") else
-              (others => '0');  -- Set to zero for negation operation.
+    y_vec <= Y when (ALUFN = "000" or ALUFN = "001" or ALUFN = "011" or ALUFN = "100") else
+             (others => '0');  -- Set to zero for negation operation.
 
-    -- Carry-in logic: set to '1' for subtraction, negation, or increment operations based on 2's compliment.
+    -- Carry-in logic: set to '1' for subtraction, negation, or increment operations.
     cin <= '1' when (ALUFN = "001" or ALUFN = "010" or ALUFN = "011") else '0';
 
     -- Instantiate the first full adder for the least significant bit.
     MapFirstFA : FA port map (
-        xi => X_ctrl(0),
-        yi => Y_ctrl(0),
+        xi => x_vec(0),
+        yi => y_vec(0),
         cin => cin,  -- Use carry-in for first bit.
         s => ALUout(0),
-        cout => reg(0)  -- Carry-out is stored for next stage.
+        cout => curr_cin(0)  -- Carry-out is stored for next stage.
     );
 
-    -- Generate a ripple-carry adder/subtractor using full adders as seen in tutorial.
+    -- Generate a ripple-carry adder/subtractor using full adders.
     MapRestFA : for i in 1 to n-1 generate
         chain : FA port map (
-            xi => X_ctrl(i),
-            yi => Y_ctrl(i),
-            cin => reg(i-1),  -- Carry-in from the previous stage.
+            xi => x_vec(i),
+            yi => y_vec(i),
+            cin =>curr_cin(i-1),  -- Carry-in from the previous stage.
             s => ALUout(i),
-            cout => reg(i)  -- Carry-out for next stage.
+            cout => curr_cin(i)  -- Carry-out for next stage.
         );
     end generate;
 
-    cout <= reg(n-1);  -- Assign final carry-out to output.
+    cout <= prev_cin(n-1);  -- Assign final carry-out to output.
 
 end AdderSubArch;
