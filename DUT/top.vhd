@@ -3,6 +3,7 @@ USE ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 USE work.aux_package.all;
+
 -------------------------------------
 ENTITY top IS
   GENERIC (
@@ -24,9 +25,11 @@ ARCHITECTURE struct OF top IS
 
   SIGNAL arith_out, shifter_out, logic_out : STD_LOGIC_VECTOR(n-1 DOWNTO 0);
   SIGNAL arith_c, shift_c : STD_LOGIC;  -- Carry flags from relevant modules
-  SIGNAL arith_X, arith_Y, shifter_X, shifter_Y, logic_X, logic_Y : STD_LOGIC_VECTOR(n-1 DOWNTO 0);
+  SIGNAL arith_input_X, arith_input_Y : STD_LOGIC_VECTOR(n-1 DOWNTO 0);
+  SIGNAL shifter_input_X, shifter_input_Y : STD_LOGIC_VECTOR(n-1 DOWNTO 0);
+  SIGNAL logic_input_X, logic_input_Y : STD_LOGIC_VECTOR(n-1 DOWNTO 0);
   SIGNAL d : STD_LOGIC;  -- Helper signal for V-flag logic
-  SIGNAL selected_ALU_result : STD_LOGIC_VECTOR(n-1 DOWNTO 0); -- Renamed from ALU_almostout
+  SIGNAL selected_ALU_result : STD_LOGIC_VECTOR(n-1 DOWNTO 0); -- Final selected ALU output
   SIGNAL zero_vector : STD_LOGIC_VECTOR(n-1 DOWNTO 0);  -- For Z flag detection
 BEGIN
 
@@ -34,8 +37,8 @@ BEGIN
   mapLogic: Logic
     GENERIC MAP(n)
     PORT MAP (
-      Y => logic_Y,
-      X => logic_X,
+      Y => logic_input_Y,
+      X => logic_input_X,
       ALUFN_i => ALUFN_i(2 DOWNTO 0),
       ALUout_o => logic_out
     );
@@ -43,8 +46,8 @@ BEGIN
   mapAdderSub: AdderSub
     GENERIC MAP(n)
     PORT MAP (
-      Y => arith_Y,
-      X => arith_X,
+      Y => arith_input_Y,
+      X => arith_input_X,
       ALUFN => ALUFN_i(2 DOWNTO 0),
       ALUout => arith_out,
       cout => arith_c
@@ -53,22 +56,22 @@ BEGIN
   mapShifter: Shifter
     GENERIC MAP(n, k)
     PORT MAP (
-      Y => shifter_Y,
-      X_to_k => shifter_X(k-1 DOWNTO 0),
+      Y => shifter_input_Y,
+      X_to_k => shifter_input_X(k-1 DOWNTO 0),
       ALUFN => ALUFN_i(2 DOWNTO 0),
       ALUout_o => shifter_out,
       cout => shift_c
     );
 
   ------------ INITIAL OPCODE PROCESSING ------------
-  arith_X <= X_i when ALUFN_i(4 DOWNTO 3) = "01" else (others => '0');
-  arith_Y <= Y_i when ALUFN_i(4 DOWNTO 3) = "01" else (others => '0');
+  arith_input_X <= X_i when ALUFN_i(4 DOWNTO 3) = "01" else (others => '0');
+  arith_input_Y <= Y_i when ALUFN_i(4 DOWNTO 3) = "01" else (others => '0');
 
-  shifter_X <= X_i when ALUFN_i(4 DOWNTO 3) = "10" else (others => '0');
-  shifter_Y <= Y_i when ALUFN_i(4 DOWNTO 3) = "10" else (others => '0');
+  shifter_input_X <= X_i when ALUFN_i(4 DOWNTO 3) = "10" else (others => '0');
+  shifter_input_Y <= Y_i when ALUFN_i(4 DOWNTO 3) = "10" else (others => '0');
 
-  logic_X <= X_i when ALUFN_i(4 DOWNTO 3) = "11" else (others => '0');
-  logic_Y <= Y_i when ALUFN_i(4 DOWNTO 3) = "11" else (others => '0');
+  logic_input_X <= X_i when ALUFN_i(4 DOWNTO 3) = "11" else (others => '0');
+  logic_input_Y <= Y_i when ALUFN_i(4 DOWNTO 3) = "11" else (others => '0');
 
   ------------ FINAL OUTPUT AND FLAGS ------------
   Cflag_o <= arith_c when ALUFN_i(4 DOWNTO 3) = "01" else
