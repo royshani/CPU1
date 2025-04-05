@@ -3,14 +3,14 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate /tb/Y
 add wave -noupdate /tb/X
 add wave -noupdate /tb/ALUFN
-add wave -noupdate /tb/ALUout
+add wave -noupdate -expand /tb/ALUout
 add wave -noupdate /tb/Nflag
 add wave -noupdate /tb/Cflag
 add wave -noupdate /tb/Zflag
 add wave -noupdate /tb/Vflag
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {0 ps} 0}
-quietly wave cursor active 0
+WaveRestoreCursors {{Cursor 1} {463137 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
