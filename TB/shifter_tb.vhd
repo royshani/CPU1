@@ -13,7 +13,7 @@ end tb;
 -------------------------------------------------------------------------------
 architecture shifter_tb of tb is
 	type mem is array (0 to ROWmax) of std_logic_vector(4 downto 0);
-	type sigvec is array (0 to 8) of std_logic_vector(n-1 downto 0);
+	type sigvec is array (0 to 7) of std_logic_vector(n-1 downto 0);
 	SIGNAL Y,X:  STD_LOGIC_VECTOR (n-1 DOWNTO 0);
 	SIGNAL ALUFN :  STD_LOGIC_VECTOR (4 DOWNTO 0);
 	SIGNAL ALUout:  STD_LOGIC_VECTOR(n-1 downto 0); -- ALUout[n-1:0]
