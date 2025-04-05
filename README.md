@@ -1,2 +1,0 @@
-# CPU1
-CPU LAB 1 
